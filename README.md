@@ -1,8 +1,6 @@
 # 09.02.06-patroni
 # Тут происходит(ла) возня с моей дипломной работой: Модернизация PostgreSQL кластера на базе Patroni
 
-![Static Badge](https://img.shields.io/badge/OkulusDev-Oxygen-Oxygen)
-
 # Что по сборке?
 Нам будут нужны следующие пакеты:
   1. ETCD
