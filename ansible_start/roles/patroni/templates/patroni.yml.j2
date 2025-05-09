@@ -1,18 +1,13 @@
-scope: {{ scope }}
-namespace: /service/
-name: {{ patroni_node_name }}
+scope: {{ cluster_scope }}
+name: {{ inventory_hostname }}
 
 restapi:
   listen: 0.0.0.0:8008
-  connect_address: {{ restapi_connect_address }}
+  connect_address: {{ ansible_host }}:8008
 
 etcd:
   hosts: {{ etcd_hosts }}
-  protocol: http
-  api_version: v3  # Critical for modern etcd
-  use_proxies: false
-  retry_timeout: 10
-  timeout: 10
+  api_version: v3
     
 bootstrap:
   dcs:
@@ -26,7 +21,6 @@ bootstrap:
         max_connections: 100
         shared_buffers: 1GB
         wal_level: logical
-        hot_standby: 'on'
 
   initdb:
   - encoding: UTF8
@@ -34,7 +28,7 @@ bootstrap:
 
   pg_hba:
   - host replication replicator 10.10.10.0/24 md5
-  - host all all 10.10.10.0/0 md5
+  - host all all 10.10.10.0/24 md5
 
   users:
     admin:
@@ -45,7 +39,7 @@ bootstrap:
 
 postgresql:
   listen: 0.0.0.0:5432
-  connect_address: {{ postgresql_connect_address }}
+  connect_address: {{ ansible_host }}:5432
   data_dir: {{ postgres_data_dir }}
   bin_dir: {{ postgres_bin_dir }}
   pgpass: /tmp/pgpass
@@ -60,6 +54,3 @@ postgresql:
 #    rewind:
 #      username: rewind_user
 #      password: "{{ superuser_password }}"
-  parameters:
-    unix_socket_directories: '/var/run/postgresql'
-
