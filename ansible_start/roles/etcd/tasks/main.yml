@@ -29,7 +29,7 @@
     enabled: yes
     daemon_reload: yes
 
-- name: Ожиданеи формирования etcd кластера
+- name: Ожидание формирования etcd кластера
   wait_for:
     port: "{{ etcd_listen_client_port }}"
   delay: 5
