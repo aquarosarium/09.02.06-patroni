@@ -3,10 +3,10 @@ name: {{ inventory_hostname }}
 
 restapi:
   listen: 0.0.0.0:8008
-  connect_address: {{ ansible_host }}:8008
+  connect_address: "{{ ansible_host }}:8008"
 
 etcd:
-  hosts: {{ etcd_hosts }}
+  hosts: "{{ etcd_hosts }}"
   api_version: v3
     
 bootstrap:
@@ -32,7 +32,7 @@ bootstrap:
 
   users:
     admin:
-      password: {{ superuser_password }}
+      password: "{{ superuser_password }}"
       options:
         - createrole
         - createdb
@@ -46,10 +46,10 @@ postgresql:
   authentication:
     replication:
       username: replicator
-      password: {{ replication_password }}
+      password: "{{ replication_password }}"
     superuser:
       username: postgres
-      password: {{ superuser_password }}
+      password: "{{ superuser_password }}"
 #    надо разобраться есть ли смысл в ревайнд юзере или достаточно суперюзера
 #    rewind:
 #      username: rewind_user
