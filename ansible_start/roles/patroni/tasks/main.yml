@@ -34,7 +34,7 @@
     mode: '0640'
   vars:
     etcd_config:
-      hosts: "10.10.10.1:2379,10.10.10.2:2379,10.10.10.3:2379"
+      hosts-{{ etcd_hosts }}
       protocol: "http"
       api_version: v3
       use_proxies: false
@@ -48,14 +48,6 @@
     owner: root
     group: root
     mode: '0644'
-
-- name: Проверка создания директории PostgreSQL
-  file:
-    path: "{{ postgres_data_dir }}"
-    state: directory
-    owner: postgres
-    group: postgres
-    mode: '0700'
 
 - name: Проверка разрешений PostgreSQL
   file:
