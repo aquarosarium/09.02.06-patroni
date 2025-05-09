@@ -1,0 +1,56 @@
+---
+- name: Install etcd
+  apt:
+    name: etcd-client
+    name: etcd-server
+    state: present
+    update_cache: yes
+
+- name: Create etcd data directory
+  file:
+    path: "{{ etcd_data_dir }}"
+    state: directory
+    owner: etcd
+    group: etcd
+    mode: '0750'
+
+- name: Configure etcd
+  template:
+    src: etcd.conf.j2
+    dest: /etc/default/etcd
+    owner: root
+    group: root
+    mode: '0640'
+
+- name: Enable and start etcd service
+  systemd:
+    name: etcd
+    state: started
+    enabled: yes
+    daemon_reload: yes
+
+- name: Wait for etcd cluster to form
+  wait_for:
+    port: "{{ etcd_listen_client_port }}"
+  delay: 5
+  timeout: 60
+
+- name: Verify etcd cluster health
+  command: etcdctl --endpoints=http://localhost:2379 endpoint health
+  environment:
+    ETCDCTL_API: "3"
+  register: etcd_health
+  changed_when: false
+  failed_when: "'healthy' not in etcd_health.stderr"
+
+- name: Show etcd cluster health
+  debug:
+    msg: "ETCD Health Status: {{ etcd_health.stderr }}"
+
+- name: Verify etcd connectivity from node
+  command: etcdctl --endpoints=http://10.10.10.1:2379,http://10.10.10.2:2379,http://10.10.10.3:2379 endpoint health
+  environment:
+    ETCDCTL_API: "3"
+  register: etcd_health
+  changed_when: false
+  failed_when: "'healthy' not in etcd_health.stderr"

@@ -1,0 +1,24 @@
+---
+#- name: Install dependencies
+#  hosts: etcd_cluster
+#  become: yes
+#  gather_facts: yes
+
+#  roles:
+#    - dep
+
+#- name: Configure etcd cluster
+#  hosts: etcd_cluster
+#  become: yes
+#  gather_facts: yes
+#
+#  roles:
+#    - etcd
+
+- name: Configure Patroni cluster
+  hosts: postgres_nodes
+  become: yes
+  gather_facts: yes
+
+  roles:
+    - patroni

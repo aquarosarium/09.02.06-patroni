@@ -1,0 +1,8 @@
+---
+- name: Install dependencies
+  apt:
+    name: vim
+    name: sudo
+    state: present
+    update_cache: yes
+
