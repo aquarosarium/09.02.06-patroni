@@ -1,6 +1,12 @@
 # 09.02.06-patroni
 # Тут происходит(ла) возня с моей дипломной работой: Модернизация PostgreSQL кластера на базе Patroni
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/cncf/artwork/9870640f123303a355611065195c43ac3f27aa19/projects/etcd/horizontal/white/etcd-horizontal-white.png">
+  <source media="(prefers-color-scheme: light)" srcset="logos/etcd-horizontal-color.svg">
+  <img alt="etcd logo" src="logos/etcd-horizontal-color.svg" width=269 />
+</picture>
+
 # Что по сборке?
 Нам будут нужны следующие пакеты:
   1. ETCD
