@@ -61,14 +61,6 @@
   systemd:
     daemon_reload: yes
 
-- name: Проверка etcd подключения с нод
-  command: etcdctl --endpoints=http://10.10.10.1:2379,http://10.10.10.2:2379,http://10.10.10.3:2379 endpoint health
-  environment:
-    ETCDCTL_API: "3"
-  register: etcd_health
-  changed_when: false
-  failed_when: "'healthy' not in etcd_health.stderr"
-
 - name: Подключение и запуск Patroni
   systemd:
     name: patroni
