@@ -125,16 +125,16 @@
 НА ЭТОМ ВРОДЕ С ПАТРОНАМИ ПРОБЛЕМ НЕ БЫЛО БОЛЬШЕ!!!
 
 root@node1:/home/user# sudo -u postgres patronictl -c /etc/patroni.yml list      #проверка кластера
-
+```
 + Cluster: pg-cluster (7502229022341569694) --+----+-----------+
 | Member   | Host       | Role    | State     | TL | Lag in MB |
 +----------+------------+---------+-----------+----+-----------+
 | pg-node1 | 10.10.10.1 | Leader  | running   | 10 |           |				#node1 - лидер
 | pg-node2 | 10.10.10.2 | Replica | streaming | 10 |         0 |				#node2 - реплика
 +----------+------------+---------+-----------+----+-----------+
-  
+  ```
 root@node1:/home/user# systemctl restart patroni							#перезагружаем патроны
-
+```
 root@node1:/home/user# sudo -u postgres patronictl -c /etc/patroni.yml list		#проверка кластера
 + Cluster: pg-cluster (7502229022341569694) --+----+-----------+
 | Member   | Host       | Role    | State     | TL | Lag in MB |
@@ -142,6 +142,6 @@ root@node1:/home/user# sudo -u postgres patronictl -c /etc/patroni.yml list		#п
 | pg-node1 | 10.10.10.1 | Replica | streaming | 11 |         0 |				#реплика перешла к node1 потому что во время перезагрузки он был недоступен
 | pg-node2 | 10.10.10.2 | Leader  | running   | 11 |           |				#node2 теперь не тварь дрожащая, а право имеет (лидер, ебать того в сраку)
 +----------+------------+---------+-----------+----+-----------+
-
+```
 
 
