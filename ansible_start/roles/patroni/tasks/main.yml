@@ -49,6 +49,8 @@
     group: root
     mode: '0644'
 
+- include_tasks: postgres_setup.yml
+
 - name: Проверка разрешений PostgreSQL
   file:
     path: /var/lib/postgresql/{{ postgres_version }}/main
