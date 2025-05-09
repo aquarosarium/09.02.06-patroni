@@ -1,0 +1,28 @@
+---
+- name: Проверка создания директории PostgreSQL
+  file:
+    path: "{{ postgres_data_dir }}"
+    state: directory
+    owner: postgres
+    group: postgres
+    mode: '0750'
+
+- name: Создание пользователя репликации
+  become_user: postgres
+  command: psql -c "CREATE USER replicator WITH REPLICATION LOGIN ENCRYPTED PASSWORD '{{ replication_password }}'"
+  ignore_errors: yes
+  register: create_user
+  changed_when: "'CREATE ROLE' in create_user.stdout"
+  
+
+- name: Обновление pg_hba.conf
+  become_user: postgres
+  lineinfile:
+    path: "/etc/postgresql/{{ postgres_version }}/main/pg_hba.conf"
+    line: "host replication replicator 10.10.10.0/24 md5"
+    insertbefore: '^# DO NOT DISABLE!'
+    state: present
+
+- name: Обновление конфигурации PostgreSQL
+  become_user: postgres
+  command: psql -c "SELECT pg_reload_conf()"
