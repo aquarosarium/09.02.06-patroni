@@ -1,0 +1,10 @@
+---
+- name: restart patroni
+  systemd:
+    name: patroni
+    state: restarted
+    enabled: yes
+
+- name: reload postgresql
+  become_user: postgres
+  command: psql -c "SELECT pg_reload_conf()"
