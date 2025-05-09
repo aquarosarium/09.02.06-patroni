@@ -18,6 +18,7 @@
 
 # Полезные фичи:
 Генерация и заход в SSH по ключу без пароля
+
 	ssh-keygen -t rsa -b 4096
 	ssh-copy-id user@10.10.10.1
 	ssh-copy-id user@10.10.10.2
