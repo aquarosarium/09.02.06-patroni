@@ -1,9 +1,7 @@
 # 09.02.06-patroni
 # Тут происходит(ла) возня с моей дипломной работой: Модернизация PostgreSQL кластера на базе Patroni
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://avatars.dzeninfra.ru/get-zen_doc/3938527/pub_5f96bf86b2613332b04939b6_5f96c76424d0d15a66deb7e2/scale_1200">
-</picture>
+![alt text](https://avatars.dzeninfra.ru/get-zen_doc/3938527/pub_5f96bf86b2613332b04939b6_5f96c76424d0d15a66deb7e2/scale_1200)
 
 # Что по сборке?
 Нам будут нужны следующие пакеты:
