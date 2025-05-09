@@ -2,7 +2,6 @@
 - name: Установка зависимостей
   hosts: etcd_cluster
   become: yes
-  gather_facts: yes
 
   roles:
     - dep
