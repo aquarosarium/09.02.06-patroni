@@ -19,7 +19,6 @@ bootstrap:
     ttl: 30
     loop_wait: 10
     retry_timeout: 10
-    maximum_lag_on_failover: 1048576
     postgresql:
       use_pg_rewind: true
       use_slots: true
@@ -35,11 +34,11 @@ bootstrap:
 
   pg_hba:
   - host replication replicator 10.10.10.0/24 md5
-  - host all all 0.0.0.0/0 md5
+  - host all all 10.10.10.0/0 md5
 
   users:
     admin:
-      password: "{{ admin_password }}"
+      password: "{{ superuser_password }}"
       options:
         - createrole
         - createdb
@@ -57,9 +56,10 @@ postgresql:
     superuser:
       username: postgres
       password: "{{ superuser_password }}"
-    rewind:
-      username: rewind_user
-      password: "{{ superuser_password }}"
+#    надо разобраться есть ли смысл в ревайнд юзере или достаточно суперюзера
+#    rewind:
+#      username: rewind_user
+#      password: "{{ superuser_password }}"
   parameters:
     unix_socket_directories: '/var/run/postgresql'
 
