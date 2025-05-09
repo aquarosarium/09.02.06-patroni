@@ -1,0 +1,135 @@
+---
+- name: Install dependencies
+  apt:
+    name:
+      - python3-pip
+      - python3-dev
+      - postgresql-{{ postgres_version }}
+      - postgresql-server-dev-{{ postgres_version }}
+      - libpq-dev  # Required for psycopg2
+    state: present
+    update_cache: yes
+
+- name: Install psycopg2-binary with --break-system-packages
+  pip:
+    name: psycopg2-binary
+    executable: pip3
+    extra_args: --break-system-packages    
+
+- name: Install Patroni with etcd support
+  pip:
+    name: patroni[etcd]
+    executable: pip3
+    extra_args: --break-system-packages
+
+- name: Create Patroni configuration directory
+  file:
+    path: /etc/patroni
+    state: directory
+    owner: postgres
+    group: postgres
+    mode: '0750'
+
+- name: Configure Patroni with proper etcd settings
+  template:
+    src: patroni.yml.j2
+    dest: /etc/patroni.yml
+    owner: postgres
+    group: postgres
+    mode: '0640'
+  vars:
+    etcd_config:
+      hosts: "10.10.10.1:2379,10.10.10.2:2379,10.10.10.3:2379"
+      protocol: "http"
+      api_version: v3
+      use_proxies: false
+      retry_timeout: 10
+      timeout: 10
+      
+- name: Create systemd service for Patroni
+  template:
+    src: patroni.service.j2
+    dest: /etc/systemd/system/patroni.service
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Ensure PostgreSQL data directory exists
+  file:
+    path: "{{ postgres_data_dir }}"
+    state: directory
+    owner: postgres
+    group: postgres
+    mode: '0700'
+
+- name: Ensure proper PostgreSQL directory permissions
+  file:
+    path: /var/lib/postgresql/{{ postgres_version }}/main
+    owner: postgres
+    group: postgres
+    mode: '0750'
+    recurse: yes
+
+- name: Reload systemd
+  systemd:
+    daemon_reload: yes
+
+- name: Verify etcd connectivity from node
+  command: etcdctl --endpoints={{ etcd_hosts }} endpoint health
+  register: etcd_health
+  changed_when: false
+  failed_when: "'healthy' not in etcd_health.stdout"
+
+- name: Verify Patroni config
+  command: patroni /etc/patroni.yml --validate
+  become_user: postgres
+  changed_when: false
+
+- name: Enable and start Patroni
+  systemd:
+    name: patroni
+    state: restarted
+    enabled: yes
+
+- name: Ensure Patroni service is running
+  systemd:
+    name: patroni
+    state: started
+    enabled: yes
+  register: patroni_service
+  until: patroni_service is succeeded
+  retries: 5
+  delay: 10
+
+- name: Check Patroni process
+  shell: pgrep -f "patroni /etc/patroni.yml"
+  register: patroni_process
+  changed_when: false
+  failed_when: patroni_process.rc != 0
+
+- name: View Patroni logs if startup failed
+  shell: journalctl -u patroni -n 50 --no-pager
+  when: patroni_process.rc != 0
+  register: patroni_logs
+  changed_when: false
+
+- name: Display Patroni logs (if any)
+  debug:
+    var: patroni_logs.stdout
+  when: patroni_logs is defined
+
+- name: Wait for Patroni API (extended timeout)
+  wait_for:
+    host: "{{ ansible_host }}"
+    port: 8008
+    delay: 10
+    timeout: 120
+  when: patroni_process.rc == 0
+- name: Verify cluster status
+  command: patronictl -c /etc/patroni.yml list
+  register: patroni_status
+  changed_when: false
+
+- name: Show cluster status
+  debug:
+    var: patroni_status.stdout_lines
