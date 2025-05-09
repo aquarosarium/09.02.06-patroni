@@ -32,7 +32,7 @@ bootstrap:
 
   users:
     admin:
-      password: "{{ superuser_password }}"
+      password: {{ superuser_password }}
       options:
         - createrole
         - createdb
@@ -46,10 +46,10 @@ postgresql:
   authentication:
     replication:
       username: replicator
-      password: "{{ replication_password }}"
+      password: {{ replication_password }}
     superuser:
       username: postgres
-      password: "{{ superuser_password }}"
+      password: {{ superuser_password }}
 #    надо разобраться есть ли смысл в ревайнд юзере или достаточно суперюзера
 #    rewind:
 #      username: rewind_user
