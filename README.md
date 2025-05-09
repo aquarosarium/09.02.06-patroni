@@ -2,9 +2,7 @@
 # Тут происходит(ла) возня с моей дипломной работой: Модернизация PostgreSQL кластера на базе Patroni
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/cncf/artwork/9870640f123303a355611065195c43ac3f27aa19/projects/etcd/horizontal/white/etcd-horizontal-white.png">
-  <source media="(prefers-color-scheme: light)" srcset="logos/etcd-horizontal-color.svg">
-  <img alt="etcd logo" src="logos/etcd-horizontal-color.svg" width=269 />
+  <source media="(prefers-color-scheme: dark)" srcset="https://avatars.dzeninfra.ru/get-zen_doc/3938527/pub_5f96bf86b2613332b04939b6_5f96c76424d0d15a66deb7e2/scale_1200">
 </picture>
 
 # Что по сборке?
