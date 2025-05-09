@@ -45,6 +45,13 @@
   debug:
     msg: "{{ etcd_health.stderr }}"
 
+- name: Перезапуск etcd
+  systemd:
+    name: etcd
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
+
 - name: Проверка etcd на нодах
   command: etcdctl --endpoints=http://10.10.10.1:2379,http://10.10.10.2:2379,http://10.10.10.3:2379 endpoint health
   environment:
