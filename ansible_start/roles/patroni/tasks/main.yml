@@ -34,7 +34,7 @@
     mode: '0640'
   vars:
     etcd_config:
-      hosts-{{ etcd_hosts }}
+      hosts: {{ etcd_hosts }}
       protocol: "http"
       api_version: v3
       use_proxies: false
