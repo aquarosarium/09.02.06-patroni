@@ -1,21 +1,21 @@
 ---
-#- name: Install dependencies
-#  hosts: etcd_cluster
-#  become: yes
-#  gather_facts: yes
+- name: Установка зависимостей
+  hosts: etcd_cluster
+  become: yes
+  gather_facts: yes
 
-#  roles:
-#    - dep
+  roles:
+    - dep
 
-#- name: Configure etcd cluster
-#  hosts: etcd_cluster
-#  become: yes
-#  gather_facts: yes
-#
-#  roles:
-#    - etcd
+- name: Конфигурация ETCD кластера
+  hosts: etcd_cluster
+  become: yes
+  gather_facts: yes
 
-- name: Configure Patroni cluster
+  roles:
+    - etcd
+
+- name: Конфигурация кластера Patroni
   hosts: postgres_nodes
   become: yes
   gather_facts: yes
