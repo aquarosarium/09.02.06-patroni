@@ -86,6 +86,7 @@ etcdctl member list
 ## Полезные команды Patroni
 ## Выводит табличку с кластером: лидеры, реплики и т.д.
 ```
+journalctl -u patroni -n 50 --no-pager
 sudo -u postgres patronictl -c /etc/patroni.yml list    
 ```
 ## Перезагрузка постгрес
