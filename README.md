@@ -1,4 +1,5 @@
 # 09.02.06-patroni
+# ВАЖНО: РАБОТА ЕЩЁ НЕ СДЕЛАНА
 
 ![alt text](https://avatars.dzeninfra.ru/get-zen_doc/3938527/pub_5f96bf86b2613332b04939b6_5f96c76424d0d15a66deb7e2/scale_1200)
 
