@@ -155,13 +155,13 @@ May 08 22:00:39 node1 patroni[36554]: 2025-05-09 02:00:39.276 GMT [36554] FATAL:
 ```
 ## РЕШЕНИЕ:
 ```
-sudo -u postgres cp /etc/postgresql/15/main/pg_hba.conf /var/lib/postgresql/15/main/	(копируем конфиг)
-sudo chown postgres:postgres /var/lib/postgresql/15/main/pg_hba.conf			(меняем владельца и группу)
-sudo chmod 640 /var/lib/postgresql/15/main/pg_hba.conf					(ставим разрешения (rw-r----- если чо))
+sudo -u postgres cp /etc/postgresql/15/main/pg_hba.conf /var/lib/postgresql/15/main/
+sudo chown postgres:postgres /var/lib/postgresql/15/main/pg_hba.conf
+sudo chmod 640 /var/lib/postgresql/15/main/pg_hba.conf
 
-sudo chown -R postgres:postgres /var/lib/postgresql/15/main/				(ну на всякий рекурсивно ещё валдельца хуйнём на папку)
-sudo find /var/lib/postgresql/15/main/ -type f -exec chmod 640 {} \;			(тут вроде проверка чего-то хуй занет, вроде можно и не втыкать в ансибл то)
-sudo find /var/lib/postgresql/15/main/ -type d -exec chmod 750 {} \;			(сейм стори)
+sudo chown -R postgres:postgres /var/lib/postgresql/15/main/
+sudo find /var/lib/postgresql/15/main/ -type f -exec chmod 640 {} \;
+sudo find /var/lib/postgresql/15/main/ -type d -exec chmod 750 {} \;
  ```
 ## ПРОБЛЕМА (СНОВА КОНФИГ ЕБАНЫЙ КАК Я ОБОЖАЮ pg_hba.conf)
 ```
