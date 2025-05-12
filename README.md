@@ -125,9 +125,9 @@ May 08 21:55:18 node2 systemd[1]: patroni.service: Main process exited, code=exi
 ```
 ## РЕШАЕТСЯ ТАК:
 ```
-sudo systemctl stop patroni					(тут всё ясно)
-sudo -u postgres rm -rf /var/lib/postgresql/15/main/*		(сносим нахуй)
-sudo systemctl start patroni					(после запуска кластер починится)
+sudo systemctl stop patroni
+sudo -u postgres rm -rf /var/lib/postgresql/15/main/*
+sudo systemctl start patroni
  ```
 ## ДАЛЬШЕ ТАК, ПЕРВАЯ НОДА НЕ ЗАПУСТИЛАСЬ, А ВТОРАЯ ОСТАНОВЛЕНА
 ```
