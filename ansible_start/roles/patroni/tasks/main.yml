@@ -1,0 +1,99 @@
+---
+- name: Install dependencies
+  apt:
+    name:
+      - python3-pip
+      - python3-dev
+      - libpq-dev
+      - postgresql-15
+      - postgresql-client-15
+      - postgresql-server-dev-15
+    state: present
+    update_cache: yes
+
+- name: Install psycopg2
+  pip:
+    name:
+      - psycopg2-binary
+      - ydiff
+      - cdiff
+    executable: pip3
+    extra_args: --break-system-packages
+
+- name: Install Patroni
+  pip:
+    name: patroni[etcd]=={{ patroni_version }}
+    executable: pip3
+    extra_args: --break-system-packages
+
+- name: Create Patroni directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "postgres"
+    group: "postgres"
+    mode: '0755'
+  loop:
+    - "/etc/patroni"
+    - "/var/log/patroni"
+    - "/var/lib/postgresql/15/main"
+    - "/var/lib/postgresql/15/wal"
+    - "/usr/lib/postgresql/15/bin"
+
+- name: Check if pg_hba exists
+  stat:
+    path: /var/lib/postgresql/15/main/pg_hba.conf
+  register: pghba_conf
+
+- name: Create pg_hba config
+  become: yes
+  command: touch /var/lib/postgresql/15/main/pg_hba.conf
+  when: not pghba_conf.stat.exists
+
+- name: Configure Patroni
+  template:
+    src: patroni.yml.j2
+    dest: "/etc/patroni.yml"
+    owner: "postgres"
+    group: "postgres"
+    mode: '0640'
+
+#- name: Check if postgresql.conf exists
+#  stat:
+#    path: /var/lib/postgresql/15/main/postgresql.conf
+#  register: pg_conf
+
+#- name: Copy PostgreSQL config
+#  become: yes
+#  command: cp /var/lib/postgresql/15/main/postgresql.auto.conf /var/lib/postgresql/15/main/postgresql.conf
+#  when: not pg_conf.stat.exists
+
+- name: Create Patroni systemd service
+  template:
+    src: patroni.service.j2
+    dest: /etc/systemd/system/patroni.service
+    owner: root
+    group: root
+    mode: '0644'
+
+- include_tasks: cluster_reinit.yml
+
+- name: Reload systemd
+  systemd:
+    daemon_reload: yes
+
+- name: Enable and start Patroni
+  systemd:
+    name: patroni
+    state: restarted
+    enabled: yes
+
+- name: Get patroni cluster status
+  command: systemctl status patroni
+  register: patroni_status
+  changed_when: false
+
+- name: Display patroni cluster status
+  debug:
+    var: patroni_status.stdout_lines
+

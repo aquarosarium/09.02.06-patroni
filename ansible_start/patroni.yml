@@ -1,0 +1,8 @@
+---
+- name: Конфигурация кластера Patroni
+  hosts: patroni_cluster
+  become: yes
+  gather_facts: yes
+
+  roles:
+    - patroni

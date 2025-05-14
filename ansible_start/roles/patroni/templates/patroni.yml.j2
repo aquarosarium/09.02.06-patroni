@@ -1,0 +1,68 @@
+scope: postgres
+namespace: /service/
+name: {{ patroni_name }}
+
+restapi:
+    listen: 0.0.0.0:8008
+    connect_address: {{ ansible_host }}:8008
+    resolve_names: false
+ 
+etcd:
+  hosts: [10.10.10.1:2379, 10.10.10.2:2379, 10.10.10.3:2379]
+ 
+bootstrap:
+  dcs:
+    ttl: 30
+    loop_wait: 10
+    retry_timeout: 10
+    maximum_lag_on_failover: 1048576
+    postgresql:
+      use_pg_rewind: true
+      use_slots: true
+      parameters:
+        wal_level: replica
+        hot_standby: "on"
+        logging_collector: "on"
+        max_wal_senders: 5
+        max_replication_slots: 5
+ 
+  initdb:
+  - encoding: UTF8
+  - data-checksums
+ 
+  pg_hba:
+  - host replication replicator 10.10.10.0/24 md5
+  - host all all 10.10.10.0/24 md5
+#  - host replication replicator 127.0.0.1/32 md5
+#  - host replication replicator 10.10.10.2/24 md5
+#  - host all all 10.15.73.1/24 md5
+#  - host all all 0.0.0.0/0 md5
+ 
+  users:
+    admin:
+      password: P@ssw0rd
+      options:
+        - createrole
+        - createdb
+ 
+postgresql:
+  listen: 0.0.0.0:5432
+  connect_address: {{ ansible_host }}:5432
+  data_dir: "/var/lib/postgresql/15/main"
+  bin_dir: "/usr/lib/postgresql/15/bin"
+  pgpass: /tmp/pgpass
+  authentication:
+    replication:
+      username: replicator
+      password: "P@ssw0rd"
+    superuser:
+      username: postgres
+      password: "P@ssw0rd"
+  parameters:
+    unix_socket_directories: '/var/run/postgresql'
+ 
+tags:
+    nofailover: false
+    noloadbalance: false
+    clonefrom: false
+    nosync: false
