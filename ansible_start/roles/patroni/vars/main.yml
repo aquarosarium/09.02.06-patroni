@@ -1,6 +1,0 @@
----
-patroni_version: 2.1.7
-patroni_config_dir: /etc/patroni
-patroni_log_dir: /var/log/patroni
-patroni_service_user: postgres
-patroni_service_group: postgres
