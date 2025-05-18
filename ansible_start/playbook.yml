@@ -1,11 +1,4 @@
 ---
-- name: Установка зависимостей
-  hosts: etcd_cluster
-  become: yes
-  gather_facts: yes
-  roles:
-    - dep
-
 - name: Конфигурация ETCD кластера
   hosts: etcd_cluster
   become: yes
@@ -13,11 +6,3 @@
 
   roles:
     - etcd
-
-- name: Конфигурация кластера Patroni
-  hosts: postgres_nodes
-  become: yes
-  gather_facts: yes
-
-  roles:
-    - patroni
