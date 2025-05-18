@@ -1,0 +1,94 @@
+---
+- name: Установка etcd
+  apt:
+    name: etcd-client
+    name: etcd-server
+    state: present
+    update_cache: yes
+
+- name: Установка зависимостей
+  apt:
+    name: ["wget", "tar"]
+    state: present
+    update_cache: yes
+
+- name: Скачивание etcd
+  get_url:
+    url: "https://github.com/etcd-io/etcd/releases/download/v3.5.9/etcd-v3.5.9-linux-amd64.tar.gz"
+    dest: "/tmp/etcd-v3.5.9-linux-amd64.tar.gz"
+
+- name: Распаковка etcd
+  unarchive:
+    src: "/tmp/etcd-v3.5.9-linux-amd64.tar.gz"
+    dest: "/opt"
+    remote_src: yes
+
+- name: Установка etcdctl
+  ansible.builtin.copy:
+    src: "/opt/etcd-v3.5.9-linux-amd64/etcdctl"
+    dest: "/usr/local/bin/etcdctl"
+    remote_src: yes  # This is now a parameter of the copy module
+    mode: '0755'
+    owner: root
+    group: root
+      
+- name: Проверка установки
+  command: etcdctl version
+  register: etcdctl_check
+  changed_when: false
+
+- name: Вывод версии etcdctl
+  debug:
+    var: etcdctl_check.stdout
+
+- name: Создание директории etcd 
+  file:
+    path: "/var/lib/etcd"
+    state: directory
+    owner: etcd
+    group: etcd
+    mode: '0750'
+
+- name: Конфигурация etcd
+  template:
+    src: etcd.conf.j2
+    dest: /etc/default/etcd
+    owner: root
+    group: root
+    mode: '0640'
+
+- name: Включение и запуск etcd
+  systemd:
+    name: etcd
+    state: started
+    enabled: yes
+    daemon_reload: yes
+
+- name: Ожидание формирования etcd кластера
+  wait_for:
+    port: "{{ etcd_listen_client_port }}"
+  delay: 5
+  timeout: 60
+
+- name: Перезапуск etcd кластера
+  systemd:
+    name: etcd
+    state: restarted
+    daemon_reload: yes
+
+- name: Проверка etcd кластера
+  command: etcdctl --endpoints=http://10.10.10.1:2379,http://10.10.10.2:2379,http://10.10.10.3:2379 endpoint health
+  environment:
+    ETCDCTL_API: "3"
+  register: etcd_health
+  changed_when: false
+  failed_when: "'healthy' not in etcd_health.stdout"
+
+- name: Get etcd cluster status
+  command: etcdctl endpoint status --write-out=table --cluster
+  register: etcd_status
+  changed_when: false
+
+- name: Display etcd cluster status
+  debug:
+    var: etcd_status.stdout_lines

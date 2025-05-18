@@ -1,0 +1,79 @@
+---
+- name: Проверка создания директории PostgreSQL
+  file:
+    path: "{{ postgres_data_dir }}"
+    state: directory
+    owner: postgres
+    group: postgres
+    mode: '0750'
+
+#- name: Reload config via shell
+#  shell: |
+#    sudo -u postgres psql -c "SELECT pg_reload_conf()"
+#  args:
+#    executable: /bin/bash
+#  become: no
+
+#- name: Allow password authentication for postgres user
+#  become_user: postgres
+#  lineinfile:
+#    path: /etc/postgresql/*/main/pg_hba.conf
+#    line: 'local   all             postgres                                md5'
+#    state: present
+#    insertafter: '^# TYPE'
+#  notify: reload postgresql
+
+#- name: Set postgres password securely
+#  community.postgresql.postgresql_user:
+#    name: postgres
+#    password: "P@ssw0rd"
+#    encrypted: yes
+#    login_user: postgres
+#    login_unix_socket: /var/run/postgresql
+
+#- name: Создание пользователя репликации
+#  become_user: postgres
+#  command: sudo psql -c "CREATE USER replicator WITH REPLICATION LOGIN ENCRYPTED PASSWORD '{{ replication_password }}'"
+#  ignore_errors: yes
+#  register: create_user
+#  changed_when: "'CREATE ROLE' in create_user.stdout"
+
+- name: Создаем пользователя репликации через модуль postgresql
+  community.postgresql.postgresql_user:
+    name: "replicator"
+    password: "password"
+    role_attr_flags: "REPLICATION,LOGIN"
+    encrypted: yes
+    login_user: postgres
+    login_host: localhost
+  become: no
+  when: "'patroni' in group_names"
+
+- name: Обновление pg_hba.conf
+  become_user: root
+  lineinfile:
+    path: "/etc/postgresql/{{ postgres_version }}/main/pg_hba.conf"
+    line: "host replication replicator 10.10.10.0/24 md5"
+    insertbefore: '^# DO NOT DISABLE!'
+    state: present
+  lineinfile:
+    path: "/etc/postgresql/{{ postgres_version }}/main/pg_hba.conf"
+    line: "local   all             all                                md5"
+    insertbefore: '^# TYPE  DATABASE        USER            ADDRESS                 METHOD'
+    state: present
+
+#- include_tasks: patroni_cluster_check.yml
+
+- name: Перезгрузка Postgresql и  Patroni
+  systemd:
+    name: postgresql
+    name: patroni
+    state: restarted
+
+#- name: Reload PostgreSQL configuration
+#  community.postgresql.postgresql_query:
+#    query: "SELECT pg_reload_conf()"
+#    login_user: postgres
+#    login_password: P@ssw0rd
+#    login_host: localhost
+#  become: no

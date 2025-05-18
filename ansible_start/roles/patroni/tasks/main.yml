@@ -1,0 +1,41 @@
+- name: Install dependencies via apt
+  ansible.builtin.apt:
+    name:
+      - python3-pip
+      - python3-psycopg2
+      - wget
+      - gnupg
+    update_cache: true
+
+- name: Adding GPG-key PostgreSQL
+  ansible.builtin.get_url:
+    url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+    dest: /etc/apt/trusted.gpg.d/postgresql.asc
+    mode: '0644'
+
+- name: Adding apt repository PostgreSQL
+  ansible.builtin.apt_repository:
+    repo: "deb http://apt.postgresql.org/pub/repos/apt bookworm-pgdg main"
+    state: present
+    filename: "pgdg"
+
+- name: Update apt
+  ansible.builtin.apt:
+    update_cache: true
+
+- name: Install PostgreSQL 16
+  ansible.builtin.apt:
+    name: postgresql-16
+    state: present
+
+- name: Install patroni
+  ansible.builtin.pip:
+    name: patroni[etcd]
+    extra_args: --break-system-packages
+
+- name: Stop PostgreSQL
+  ansible.builtin.service:
+    name: postgresql
+    state: stopped
+    enabled: false
+

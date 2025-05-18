@@ -1,0 +1,130 @@
+---
+- name: Установка зависимостей
+  apt:
+    name:
+      - python3-pip
+      - python3-dev
+      - postgresql-15
+      - postgresql-client
+      - postgresql-server-dev-15
+      - gcc
+      - libpq-dev  # Required for psycopg2
+    state: present
+    update_cache: yes
+
+- name: Установка зависимостей pip
+  pip:
+    name: psycopg2-binary
+    executable: pip3
+    extra_args: --break-system-packages
+
+- name: Установка Patroni
+  pip:
+    name: patroni[etcd]
+    executable: pip3
+    extra_args: --break-system-packages    
+
+- name: Создание директории Patroni
+  file:
+    path: /etc/patroni
+    state: directory
+    owner: postgres
+    group: postgres
+    mode: '0750'
+
+- name: Конфигурация Patroni под etcd
+  template:
+    src: patroni.yml.j2
+    dest: /etc/patroni/patroni.yml
+    owner: postgres
+    group: postgres
+    mode: '0640'
+  vars:
+    etcd_config:
+      hosts: " {{ etcd_hosts }}"
+      protocol: "http"
+      api_version: v3
+      use_proxies: false
+      retry_timeout: 10
+      timeout: 10
+
+- name: Создание systemd службы под Patroni
+  template:
+    src: patroni.service.j2
+    dest: /etc/systemd/system/patroni.service
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Включаем патрони
+  systemd:
+    name: patroni
+    state: started
+
+- name: Copy PostgreSQL config files as root
+  become: yes  # Run as root
+  command: cp /var/lib/postgresql/15/main/postgresql.auto.conf /var/lib/postgresql/15/main/postgresql.conf
+
+- include_tasks: postgres_setup.yml
+
+- name: Проверка разрешений PostgreSQL
+  file:
+    path: /var/lib/postgresql/{{ postgres_version }}/main
+    owner: postgres
+    group: postgres
+    mode: '0750'
+    recurse: yes
+
+- name: Перезагрузка systemd
+  systemd:
+    daemon_reload: yes
+
+- name: Подключение и (пере)запуск Patroni
+  systemd:
+    name: patroni
+    state: restarted
+    enabled: yes
+
+- name: Проверка запуска Patroni сервиса
+  systemd:
+    name: patroni
+    state: started
+    enabled: yes
+  register: patroni_service
+  until: patroni_service is succeeded
+  retries: 5
+  delay: 10
+
+- name: Проверка процесса Patroni
+  shell: pgrep -f "patroni /etc/patroni.yml"
+  register: patroni_process
+  changed_when: false
+  failed_when: patroni_process.rc != 0
+
+#- name: Регистрация логов Patroni
+#  shell: journalctl -u patroni -n 50 --no-pager
+#  when: patroni_process.rc != 0
+#  register: patroni_logs
+#  changed_when: false
+
+#- name: Отображение логов Patroni, если запуск не удался
+#  debug:
+#    var: patroni_logs.stdout
+#  when: patroni_logs is defined
+
+- name: Ожидание Patroni
+  wait_for:
+    host: "{{ ansible_host }}"
+    port: 8008
+    delay: 10
+    timeout: 120
+  when: patroni_process.rc == 0
+- name: Verify cluster status
+  command: patronictl -c /etc/patroni.yml list
+  register: patroni_status
+  changed_when: false
+
+- name: Отображение статуса кластера
+  debug:
+    var: patroni_status.stdout_lines
+

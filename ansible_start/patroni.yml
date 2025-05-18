@@ -1,0 +1,8 @@
+---
+- name: Конфигурация кластера Patroni
+  hosts: postgres_nodes
+  become: yes
+  gather_facts: yes
+
+  roles:
+    - patroni
