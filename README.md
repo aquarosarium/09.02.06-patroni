@@ -1,5 +1,4 @@
 # 09.02.06-patroni
-# ВАЖНО: РАБОТА ЕЩЁ НЕ СДЕЛАНА
 
 ![alt text](https://avatars.dzeninfra.ru/get-zen_doc/3938527/pub_5f96bf86b2613332b04939b6_5f96c76424d0d15a66deb7e2/scale_1200)
 
@@ -9,15 +8,18 @@
   1. ETCD
   2. Patroni
   3. HAProxy
-  4. PgBouncer
+  4. Pgbouncer
+  5. Keepalived
+  6. Prometheus + Grafana
 ```
-В работе используется 3 машины для самой работы и ещё одна для Ansible (одно из условий предприяти - автоматизация проекта)
+В работе используется 4 машины для самой работы и ещё одна для Ansible
 ## IP:
 ```
-  1. 10.10.10.1
-  2. 10.10.10.2
-  3. 10.10.10.3
-  4. 10.10.10.11  (ansible)
+  1. 10.10.10.1 (etcd+postgresql+patroni+pgbouncer)
+  2. 10.10.10.2  (etcd+postgresql+patroni+pgbouncer)
+  3. 10.10.10.3  (etcd+haproxy+keepalived+prometheus+grafana)
+  4. 10.10.10.4  (haproxy+keepalived+система оповещений)
+  5. 10.10.10.11  (ansible ssh node)
 ```
 
 ## Авторазвёртывание проекта производится через ансибл примерно такой структуры
