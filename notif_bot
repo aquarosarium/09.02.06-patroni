@@ -1,0 +1,71 @@
+import urllib.request
+import json
+import time
+import requests
+import hashlib
+
+prometheus_url = 'http://127.0.0.1:9090'
+bot_token = "8057975296:AAHpTYrdxeRSBoYHvDSLCZnMWsLsDdNL0oM"
+bot_chatID = "1762114550"
+last_message_id = None
+
+def tg_bot(bot_message):
+    """ Отправляет сообщение и возвращает его id. """
+    send_text = f"https://api.telegram.org/bot{bot_token}/sendMessage?chat_id={bot_chatID}&parse_mode=HTML&text={bot_message}"
+    response = requests.get(send_text)
+    result = response.json()
+    if result['ok']:
+        return result['result']['message_id']
+    else:
+        raise ValueError("Ошибка отправки сообщения.")
+
+def delete_last_message(message_id):
+    """ Удаляет последнее отправленное сообщение. """
+    del_url = f"https://api.telegram.org/bot{bot_token}/deleteMessage?chat_id={bot_chatID}&message_id={message_id}"
+    requests.post(del_url)
+
+#def tg_bot(bot_message):
+#    send_text = "https://api.telegram.org/bot" + bot_token + "/sendMessage?chat_id=" + bot_chatID + "&parse_mode=HTML&text=" + bot_message
+#    response = requests.get(send_text)
+#    return response.json()
+
+def get_data(api):
+    with urllib.request.urlopen(prometheus_url + '/api/v1/' + api) as url:
+        data = json.load(url)
+    return data
+
+def get_alerts_message():
+    data = get_data('alerts')
+    msg = '<b>Актуальное состояние инфраструктуры:</b>\n'
+    if data['data']['alerts']:
+        for alert in data['data']['alerts']:
+            msg += f'\n=====================================\n' \
+                   f'<b>⚠ Проблема:</b> {alert["labels"].get("alertname")}\n' \
+                   f'<b>💻 Машина:</b> {alert["labels"].get("instance")}\n' \
+                   f'<b>🔴 Статус: критический - </b>{alert["state"]}\n' \
+                   f'<b>ℹ Описание:</b> {alert["annotations"].get("description")}\n' \
+                   f'\n<b>⏳ Время:</b> {alert["activeAt"]}\n' \
+                   f'=====================================\n'
+    else:
+        msg += f'\n<b>Система работает в штатном режиме</b>\n' \
+               f'☕ У вас есть время попить кофе\n'
+    return msg
+
+last_alerts = None
+
+while True:
+    try:
+        current_alerts_msg = get_alerts_message()
+        current_alerts = current_alerts_msg
+        if last_alerts is None or current_alerts != last_alerts:
+            new_message_id = tg_bot(current_alerts_msg)
+#            time.sleep(1)
+            if last_message_id is not None:
+                delete_last_message(last_message_id)
+            last_message_id = new_message_id
+            last_alerts = current_alerts
+        time.sleep(5)
+
+    except Exception as e:
+        print(f'Ошибка подключения к Prometheus: {e}')
+        time.sleep(30)
