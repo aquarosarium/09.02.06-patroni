@@ -1,0 +1,44 @@
+groups:
+- name: patroni_alert
+  rules:
+  - alert: Patroni
+    expr: up{job="patroni_postgresql"} == 0
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Server {{ $labels.instance }}."
+      description: "Patroni недоступна по адресу {{ $labels.instance }}."
+
+- name: node_alert
+  rules:
+  - alert: CPU
+    expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode='idle',job="node"}[1m])) * 100) > 80
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Server {{ $labels.instance }}."
+      description: "Сервер {{ $labels.instance }} использует {{ $value }}% процессора"
+
+- name: memory_alert
+  rules:
+  - alert: RAM
+    expr: 100 - (node_memory_MemAvailable_bytes{job="node"} / node_memory_MemTotal_bytes{job="node"} * 100) > 90
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Server($labels.instance)"
+      description: Уровень загрузки оперативной памяти превысил 90% на сервере {{ $labels.instance }}.
+
+- name: haproxy_alert
+  rules:
+  - alert: haproxy
+    expr: haproxy_up{job="haproxy_exporter"} == 0
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Server {{ $labels.instance }}."
+      description: "HAProxy недоступен по адресу {{ $labels.instance }}."
